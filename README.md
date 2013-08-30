@@ -27,7 +27,7 @@ Download and Install [VirtualBox](http://www.virtualbox.org/)
 
 Clone this repository
 
-	git clone git://github.com/mrimann/VagrantTYPO3Flow.git
+	git clone git://github.com/swiftlizard/VagrantTYPO3Flow.git
 
 Change to the cloned repository
 
