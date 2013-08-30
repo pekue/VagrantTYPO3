@@ -1,16 +1,22 @@
 Vagrant Config for TYPO3 Flow Development
 =========================================
 
-My default Linux box for PHP development with [TYPO3 Flow](http://flow.typo3.org/) (but should work with other PHP stuff, too).
+Disclaimer: 
+This is a fork of git://github.com/mrimann/VagrantTYPO3Flow.git heavily inspired by his works (including the .md file) and just some minor changes to PHP Version and NginX Version shiped with it.
 
-The usual approach (ok, seen more-often than mine) is to have one Vagrant based system per project. While that makes perfectly sense in many situations, I needed something different: I'm working on many smaller projects during my spare-time and based on that, my Vagrant setup suffices the following requirements:
+I played around with https://puphpet.com for a little while, but reached the point where it would have required to much work to proceed further, although I reached my main goal, a prove of concept pretty fast.
 
-- I need to be able to work offline, e.g. in the train
+Those of you who know me personaly know that I like to keep my dev environments slim, and bleeding edge. That's why I forked Marios repo do get a shipable product. 
+The Box is setup for TYPO3.Flow development with all necessary components configured to get you up and running in a bliz.
+
+The usual approach (ok, seen more-often than this) is to have one Vagrant based system per project. While that makes perfectly sense in many situations, I needed something more convinient: I'm working on a lot of projects, often sandboxing proof of concepts, my Vagrant setup suffices the following requirements:
+
+- I need to be able to work offline
 - I want a minimum overhead for creating a new "site" or virtual host
 - I prefer the GUI Git client ([Tower](http://www.git-tower.com/)) over the command line - so the project files shall remain locally on the host system
 - I want a documented and recoverable setup of the VM
 
-For that I thought of a solution based on Apaches *vhost_alias" module, which allows me to call whatever domain name I want - and it will be dynamically mapped locally. E.g. for a request for "example.com", Apache will look in the document-root at "/var/www/example.com" - without having to declare that in a vHost directive for each new project. Just let the DNS or hosts file point to the IP of the Vagrant box and you're ready to go. The subdirectory "vHost" of this repository is mounted as /var/www in the guest OS.
+For that I thought of a solution based on Apaches *vhost_alias" module, which allows me to call whatever domain name I want - and it will be dynamically mapped locally. E.g. for a request for "example.com", without having to declare that in a vHost directive for each new project. Just let the DNS or hosts file point to the IP of the Vagrant box and you're ready to go. The subdirectory "vHost" of this repository is mounted as /var/www in the guest OS.
 
 Installation:
 -------------
@@ -31,18 +37,17 @@ Boot up the virtual box:
 
 	vagrant up
 
-The box gets two static IP addresses **192.168.42.42** and **192.168.42.43** which are only accessible from your local computer.
+The box gets one static IP addresses **192.168.42.42** which is only accessible from your local computer.
 
-Now add any project you're working on (e.g. "example.com") to your hosts file and let it point to 192.168.42.42 or 192.168.42.43 - and create a directory with the domain name within the sub-directory "vHosts". As soon as you call that domain from your browser, you should see it working. As an alternative to editing your hosts file over and over again, you can of course also install dnsmasq on your host system.
+Now add any project you're working on (e.g. "example.com") to your hosts file and let it point to 192.168.42.42 and create a directory with the domain name within the sub-directory "vHosts". As soon as you call that domain from your browser, you should see it working.
 
-The two IP addresses are for either Apache or Nginx - this means you can direct the request to either one of the two webservers via your hosts file entry:
+The IP addresse is for  Nginx - this means you can direct the request the webserver via your hosts file entry:
 
-* Apache listens on 192.168.42.42 on port 80
-* Nginx listens on 192.168.42.43 on port 80
+* Nginx listens on 192.168.42.42 on port 80
 
-For name resolution from within the guest system (e.g. within the vagrant box), the dnsmasq tool is installed and configured so that lookups to *.dev, *.prod and *.lo will always result in the IP of Nginx (192.168.42.43).
+For name resolution from within the guest system lookups to *.dev, *.prod and *.lo it will always result in the IP of Nginx (192.168.42.42).
 
-For demonstration purpose, I've added "phpconfig.lo" already, as soon as you let that name point to the IP 192.168.42.42, you should see some _phpinfo()_ output when accessing "phpconfig.lo" with your browser.
+For demonstration purpose, Mario added "phpconfig.lo" already, as soon as you let that name point to the IP 192.168.42.42, you should see some _phpinfo()_ output when accessing "phpconfig.lo" with your browser.
 
 If you're running a [TYPO3 Flow](http://flow.typo3.org/) based web-application where the document-root must point to a sub-directory (e.g. /Web/), you can solve this with a little symlink as shown in the following (pseudo) directory listing:
 
@@ -63,34 +68,16 @@ What it contains:
 -----------------
 
 - MySQL server (user: *root*, password *vagrant*)
-- PHP
-- Apache with mass vHost config
-- Nginx with mass host config
-- dnsmasq config (for local name resolution within the vagrant-box)
-- phpMyAdmin (http://192.168.42.42/phpmyadmin/ - or any other "domain" that points to this IP)
+- PHP 5.5.x
+- Nginx 1.4.2 with mass host config
 - nano-Editor
 - git and tig
 - Composer (installed + kept up to date)
 
 TODO:
 -----
-
-The following stuff is what I want to add to this box:
-
-[vacuum]
-
-Optional and maybe later:
-
-- xDebug
-- zsh with oh-my-zsh
-- Postfix / Mail-Access for testing Mails
-
-
-## How to contribute?
-
-Feel free to [file new issues](https://github.com/mrimann/VagrantTYPO3Flow/issues) if you find a problem or to propose a new feature. If you want to contribute your time and submit an improvement, I'm very eager to look at your pull request!
-
-In case you want to discuss a new feature with me, just send me an [e-mail](mailto:mario@rimann.org).
+During the next months I will try to get a redundant 3 Layer Setup to be created (2x HA-Proxy, 2x Webserver, 2x DB Server Master->Slave, 1xNFS) based on this setup.
+Lets see how far I will get ... Help is more than welcome.
 
 ## License
 
@@ -98,4 +85,4 @@ Licensed under the permissive [MIT license](http://opensource.org/licenses/MIT) 
 
 ### Can I use it in commercial projects?
 
-Yes, please! And if you save some of your precious time with it, I'd be very happy if you give something back - be it a warm "Thank you" by mail, spending me a drink at a conference, [send me a post card or some other surprise](http://www.rimann.org/support/) :-)
+Yes, please! And if you save some of your precious time with it, I'd be very happy if you give Mario something back - be it a warm "Thank you" by mail, spending him a drink at a conference, [send him a post card or some other surprise](http://www.rimann.org/support/) :-)

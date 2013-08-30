@@ -31,46 +31,39 @@ exec { "Import repo signing key to apt keys":
 	unless      => "apt-key list | grep E5267A6C",
 }
 
-file { '/etc/apt/sources.list.d/php-5.4-repos.list':
-	ensure => present,
-	source => "/vagrant/manifests/files/php/php-5.4-repos.list",
-	notify => Service['php5-fpm'],
+exec { "Import repo signing key to apt keys 2":
+	path   => "/usr/bin:/usr/sbin:/bin",
+	command     => "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys ABF5BD827BD9BF62",
+	unless      => "apt-key list | grep ABF5BD827BD9BF62",
 }
 
 exec { 'apt-get update':
-	command => '/usr/bin/apt-get update',
-	onlyif => "/bin/bash -c 'exit $(( $(( $(date +%s) - $(stat -c %Y /var/lib/apt/lists/$( ls /var/lib/apt/lists/ -tr1 | tail -1 )) )) <= 604800 ))'",
+	command => '/usr/bin/sudo apt-get update',
+}
+
+exec { 'install python-software-properties':
+	command => '/usr/bin/sudo apt-get install -y python-software-properties',
+	require => Exec['apt-get update']
+}
+
+exec { 'adding new nginx':
+	command => '/usr/bin/sudo add-apt-repository -y "deb http://nginx.org/packages/ubuntu/ precise nginx"',
+	require => Exec['install python-software-properties']
+}
+
+exec { 'adding ppa:ondrej/php5':
+	command => '/usr/bin/sudo add-apt-repository -y ppa:ondrej/php5',
+	require => Exec['install python-software-properties']
+}
+
+exec { 'apt-get update final':
+	command => '/usr/bin/sudo apt-get update',
 	require => [
-		File['/etc/apt/sources.list.d/php-5.4-repos.list'],
-		Exec["Import repo signing key to apt keys"],
-	],
+		Exec['install python-software-properties'],
+		Exec['adding new nginx'],
+		Exec['adding ppa:ondrej/php5'],
+	]
 }
-
-
-# ---------------------------------------------------
-# Install dnsmasq
-# ---------------------------------------------------
-
-package { "dnsmasq":
-	ensure => present,
-	require => Exec['apt-get update'],
-}
-
-service { 'dnsmasq':
-	ensure => running,
-	hasstatus => true,
-	hasrestart => true,
-	enable => true,
-	require => Package["dnsmasq"],
-}
-
-file { '/etc/dnsmasq.conf':
-	ensure => present,
-	source => "/vagrant/manifests/files/dnsmasq/dnsmasq.conf",
-	notify => Service['dnsmasq'],
-}
-
-
 
 
 # ---------------------------------------------------
@@ -79,7 +72,7 @@ file { '/etc/dnsmasq.conf':
 
 package { "mysql-server":
 	ensure => present,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 }
 
 service { 'mysql':
@@ -104,42 +97,37 @@ exec { 'mysql-root-password':
 
 package { 'php5-fpm':
 	ensure => installed,
-	require => Exec['apt-get update'],
-}
-
-package { 'libapache2-mod-php5':
-	ensure => installed,
-	require => Exec['apt-get update'],
-	notify => Service['apache2'],
+	require => Exec['apt-get update final'],
 }
 
 package { 'php5-mysql':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
 }
+
 package { 'php5-mcrypt':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
 }
 package { 'php5-curl':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
 }
 package { 'php5-gd':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
 }
 package { 'php5-cli':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 }
 package { 'php-apc':
 	ensure => installed,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
 }
 
@@ -161,17 +149,6 @@ file { '/etc/php5/fpm/pool.d/www.conf':
 	],
 }
 
-
-file { '/etc/php5/apache2/conf.d/99-vagrant.ini':
-	ensure => present,
-	source => "/vagrant/manifests/files/php/90-vagrant.ini",
-	require => [
-		Package['libapache2-mod-php5'],
-	],
-	notify => [
-		Service['apache2'],
-	],
-}
 
 file { '/etc/php5/fpm/conf.d/90-vagrant.ini':
 	ensure => present,
@@ -224,7 +201,7 @@ exec { 'selfupdate-composer':
 
 package { "nginx":
 	ensure => present,
-	require => Exec['apt-get update'],
+	require => Exec['apt-get update final'],
 }
 
 file { '/etc/nginx/nginx.conf':
@@ -242,87 +219,4 @@ service { 'nginx':
 	hasrestart => true,
 	enable => true,
 	require => Package['nginx'],
-}
-
-
-
-# ---------------------------------------------------
-# Install Apache
-# ---------------------------------------------------
-
-package { "apache2":
-	ensure => present,
-	require => Exec['apt-get update'],
-}
-
-service { 'apache2':
-	ensure => running,
-	hasstatus => true,
-	hasrestart => true,
-	enable => true,
-	require => Package['apache2'],
-}
-
-file { "/var/www":
-	ensure => directory,
-	recurse => false,
-}
-
-# Enable the "vhost_alias" module for apache
-exec { "/usr/sbin/a2enmod vhost_alias":
-	unless => "/bin/readlink -e /etc/apache2/mods-enabled/vhost_alias.load",
-	notify => Exec["force-reload-apache2"],
-	require => [
-		Package['apache2'],
-		File['/etc/apache2/ports.conf'],
-	],
-}
-
-# Enable the "rewrite" module for apache
-exec { "/usr/sbin/a2enmod rewrite":
-	unless => "/bin/readlink -e /etc/apache2/mods-enabled/rewrite.load",
-	notify => Exec["force-reload-apache2"],
-	require => Package['apache2'],
-}
-
-exec { "force-reload-apache2":
-	command => "/etc/init.d/apache2 force-reload",
-	refreshonly => true,
-}
-
-file { '/etc/apache2/ports.conf':
-	ensure => present,
-	source => "/vagrant/manifests/files/apache/ports.conf",
-	require => [
-		Package['apache2']
-	],
-	notify => Service['apache2'],
-}
-
-file { '/etc/apache2/sites-enabled/mass_vhost.conf':
-	ensure => present,
-	source => "/vagrant/manifests/files/apache/mass_vhost.conf",
-	require => [
-		Package['apache2'],
-		Exec['/usr/sbin/a2enmod vhost_alias'],
-		File['/etc/apache2/ports.conf']
-	],
-	notify => Service['apache2'],
-}
-
-
-
-# ---------------------------------------------------
-# Install PhpMyAdmin
-# ---------------------------------------------------
-
-package { 'phpmyadmin':
-	ensure => present,
-	require => Package['apache2'],
-}
-
-file { '/etc/apache2/sites-enabled/phpmyadmin.conf':
-	source => "/vagrant/manifests/files/apache/phpmyadmin.conf",
-	require => Package['phpmyadmin'],
-	notify => Service['apache2'],
 }
