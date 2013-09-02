@@ -41,25 +41,26 @@ exec { 'apt-get update':
 	command => '/usr/bin/sudo apt-get update',
 }
 
-exec { 'install python-software-properties':
-	command => '/usr/bin/sudo apt-get install -y python-software-properties',
-	require => Exec['apt-get update']
+package { "python-software-properties":
+	ensure => present,
+	require => Exec['apt-get update'],
 }
+
 
 exec { 'adding new nginx':
 	command => '/usr/bin/sudo add-apt-repository -y "deb http://nginx.org/packages/ubuntu/ precise nginx"',
-	require => Exec['install python-software-properties']
+	require => Package['python-software-properties']
 }
 
 exec { 'adding ppa:ondrej/php5':
 	command => '/usr/bin/sudo add-apt-repository -y ppa:ondrej/php5',
-	require => Exec['install python-software-properties']
+	require => Package['python-software-properties']
 }
 
 exec { 'apt-get update final':
 	command => '/usr/bin/sudo apt-get update',
 	require => [
-		Exec['install python-software-properties'],
+		Package['python-software-properties'],
 		Exec['adding new nginx'],
 		Exec['adding ppa:ondrej/php5'],
 	]
@@ -101,6 +102,12 @@ package { 'php5-fpm':
 }
 
 package { 'php5-mysql':
+	ensure => installed,
+	require => Exec['apt-get update final'],
+	notify => Service['php5-fpm'],
+}
+
+package { 'php5-mysqlnd':
 	ensure => installed,
 	require => Exec['apt-get update final'],
 	notify => Service['php5-fpm'],
@@ -219,4 +226,13 @@ service { 'nginx':
 	hasrestart => true,
 	enable => true,
 	require => Package['nginx'],
+}
+
+# ----------------------------------------------------
+# ImageMagick
+# ----------------------------------------------------
+
+package{"imagemagick":
+	ensure => present,
+	require => Exec['apt-get update final'],
 }
