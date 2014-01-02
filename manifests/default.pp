@@ -93,18 +93,12 @@ exec { 'mysql-root-password':
 
 
 # ---------------------------------------------------
-# Install PHP 5.4.x with FPM
+# Install PHP 5.5.x with FPM
 # ---------------------------------------------------
 
 package { 'php5-fpm':
 	ensure => installed,
 	require => Exec['apt-get update final'],
-}
-
-package { 'php5-mysql':
-	ensure => installed,
-	require => Exec['apt-get update final'],
-	notify => Service['php5-fpm'],
 }
 
 package { 'php5-mysqlnd':
@@ -131,11 +125,6 @@ package { 'php5-gd':
 package { 'php5-cli':
 	ensure => installed,
 	require => Exec['apt-get update final'],
-}
-package { 'php-apc':
-	ensure => installed,
-	require => Exec['apt-get update final'],
-	notify => Service['php5-fpm'],
 }
 
 service { 'php5-fpm':
@@ -193,7 +182,7 @@ exec { 'install-composer':
 }
 
 exec { 'selfupdate-composer':
-	command => 'composer self-update',
+	command => 'sudo composer self-update',
 	path => "/usr/local/bin/:/usr/bin/",
 	require => [
 		Exec['install-composer'],
