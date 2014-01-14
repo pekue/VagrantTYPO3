@@ -1,4 +1,4 @@
 /.vagrant/machines/default/virtualbox/id
 /.idea/
-/vHost/t3-cms-*/
-/vHost/*.sql
+/vHosts/t3-cms-*/
+/vHosts/*.sql
