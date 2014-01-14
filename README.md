@@ -7,7 +7,7 @@ This is a fork of git://github.com/mrimann/VagrantTYPO3Flow.git heavily inspired
 I played around with https://puphpet.com for a little while, but reached the point where it would have required to much work to proceed further, although I reached my main goal, a prove of concept pretty fast.
 
 Those of you who know me personaly know that I like to keep my dev environments slim, and bleeding edge. That's why I forked Marios repo do get a shipable product. 
-The Box is setup for TYPO3.Flow development with all necessary components configured to get you up and running in a bliz.
+The Box is setup for TYPO3.Flow and TYPO3.Neos as well as TYPO3.CMS development with all necessary components configured to get you up and running in a bliz.
 
 The usual approach (ok, seen more-often than this) is to have one Vagrant based system per project. While that makes perfectly sense in many situations, I needed something more convinient: I'm working on a lot of projects, often sandboxing proof of concepts, my Vagrant setup suffices the following requirements:
 
@@ -23,7 +23,8 @@ Installation:
 
 Install [Vagrant](http://vagrantup.com/) with the installer that fits your hosts operating system.
 
-Download and Install [VirtualBox](http://www.virtualbox.org/)
+Download and Install [VirtualBox](http://www.virtualbox.org/) or if you prefer [VMWare](https://www.vmware.com/products/workstation/) / [VMWare Fusion](https://www.vmware.com/products/fusion-professional/)
+In the later case you will need to buy and install the [Vagrant Plugin](http://www.vagrantup.com/vmware) for VmWare.
 
 Clone this repository
 
@@ -67,10 +68,13 @@ What it contains:
 
 - MySQL server (user: *root*, password *vagrant*)
 - PHP 5.5.x
-- Nginx 1.4.2 with mass host config
+- Nginx 1.4.x with mass host config
+- Memchached
 - nano-Editor
 - git and tig
 - Composer (installed + kept up to date)
+- XHProf including XHProf.io Web Gui pre installed running at xhprof.io.lo on the guest system
+
 
 TODO:
 -----

@@ -90,11 +90,26 @@ exec { 'mysql-root-password':
 	require => Package['mysql-server'],
 }
 
+exec { 'mysql-root-create-xhprof-db':
+	command => '/usr/bin/mysql -uroot -pvagrant -e "create database xhprof CHARACTER SET utf8 COLLATE utf8_general_ci;" ',
+	require => Package['mysql-root-password'],
+}
+
+exec { 'mysql-root-import-xhprof-db':
+	command => '/usr/bin/mysql -uroot -pvagrant xhprof < /var/www/xhprof.io/setup/databse.sql',
+	require => Package['mysql-root-create-xhprof-db'],
+}
+
 
 
 # ---------------------------------------------------
 # Install PHP 5.5.x with FPM
 # ---------------------------------------------------
+
+package { 'memcached':
+	ensure => installed,
+	require => Exec['apt-get update final'],
+}
 
 package { 'php5-fpm':
 	ensure => installed,
@@ -126,6 +141,26 @@ package { 'php5-cli':
 	ensure => installed,
 	require => Exec['apt-get update final'],
 }
+
+package { 'php5-memcache':
+	ensure => installed,
+	require => Exec['apt-get update final'],
+}
+
+package { 'php5-dev':
+	ensure => installed,
+	require => Exec['apt-get update final'],
+}
+
+exec { 'install_xhprof':
+    command => '/usr/bin/pecl install -f xhprof',
+    require => Package['php5-dev'],
+  }
+
+package { ['graphviz']:
+    ensure  => installed,
+    notify  => Service['php5-fpm'],
+  }
 
 service { 'php5-fpm':
 	ensure => running,
