@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
   		vmware.vmx["numvcpus"] = "2"
 	end
 
-	config.vm.provider "vmware_fusion" do |vmware, override|
+	config.vm.provider "vmware_workstation" do |vmware, override|
 		override.vm.box     = "precise64_vmware"
         override.vm.box_url = "http://files.vagrantup.com/precise64_vmware.box"
 
