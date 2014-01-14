@@ -2,43 +2,57 @@
 # Basic system stuff
 # ---------------------------------------------------
 
+# Ensure system is up to date
+exec { 'aptitude upgrade':
+	command => '/usr/bin/sudo aptitude -y upgrade',
+}
+
 package {'apparmor':
 	ensure => absent,
+	require => Exec['aptitude upgrade'],
 }
 package { 'unzip':
 	ensure => present,
+	require => Exec['aptitude upgrade'],
 }
 
 package { 'curl':
 	ensure => present,
+	require => Exec['aptitude upgrade'],
 }
 
 package { 'nano':
 	ensure => present,
+	require => Exec['aptitude upgrade'],
 }
 
 package { 'git':
 	ensure => present,
+	require => Exec['aptitude upgrade'],
 }
 
 package { 'tig':
 	ensure => present,
+	require => Exec['aptitude upgrade'],
 }
 
 exec { "Import repo signing key to apt keys":
 	path   => "/usr/bin:/usr/sbin:/bin",
 	command     => "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E5267A6C",
 	unless      => "apt-key list | grep E5267A6C",
+	require => Exec['aptitude upgrade'],
 }
 
 exec { "Import repo signing key to apt keys 2":
 	path   => "/usr/bin:/usr/sbin:/bin",
 	command     => "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys ABF5BD827BD9BF62",
 	unless      => "apt-key list | grep ABF5BD827BD9BF62",
+	require => Exec['aptitude upgrade'],
 }
 
 exec { 'apt-get update':
 	command => '/usr/bin/sudo apt-get update',
+	require => Exec['aptitude upgrade'],
 }
 
 package { "python-software-properties":
@@ -92,12 +106,12 @@ exec { 'mysql-root-password':
 
 exec { 'mysql-root-create-xhprof-db':
 	command => '/usr/bin/mysql -uroot -pvagrant -e "create database xhprof CHARACTER SET utf8 COLLATE utf8_general_ci;" ',
-	require => Package['mysql-root-password'],
+	require => Exec['mysql-root-password'],
 }
 
 exec { 'mysql-root-import-xhprof-db':
-	command => '/usr/bin/mysql -uroot -pvagrant xhprof < /var/www/xhprof.io/setup/databse.sql',
-	require => Package['mysql-root-create-xhprof-db'],
+	command => '/usr/bin/mysql -uroot -pvagrant xhprof < /var/www/xhprof.io/setup/database.sql',
+	require => Exec['mysql-root-create-xhprof-db'],
 }
 
 
