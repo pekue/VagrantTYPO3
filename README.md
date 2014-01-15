@@ -34,6 +34,10 @@ Change to the cloned repository
 
 	cd VagrantTYPO3Flow
 
+Install Plugin vbguest which keeps your boxes in sync with you virtualbox version:
+
+	vagrant plugin install vagrant-vbguest
+
 Boot up the virtual box:
 
 	vagrant up
