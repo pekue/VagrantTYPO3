@@ -40,7 +40,7 @@ Boot up the virtual box:
 
 The box gets one static IP addresses **192.150.50.50** which is only accessible from your local computer.
 
-Now add any project you're working on (e.g. "example.com") to your hosts file and let it point to 192.168.42.42 and create a directory with the domain name within the sub-directory "vHosts". As soon as you call that domain from your browser, you should see it working.
+Now add any project you're working on (e.g. "example.com") to your hosts file and let it point to 192.150.50.50 and create a directory with the domain name within the sub-directory "vHosts". As soon as you call that domain from your browser, you should see it working.
 
 The IP addresse is for  Nginx - this means you can direct the request the webserver via your hosts file entry:
 
