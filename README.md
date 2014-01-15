@@ -28,11 +28,11 @@ In the later case you will need to buy and install the [Vagrant Plugin](http://w
 
 Clone this repository
 
-	git clone git://github.com/swiftlizard/VagrantTYPO3Flow.git
+	git clone git://github.com/swiftlizard/VagrantTYPO3.git
 
 Change to the cloned repository
 
-	cd VagrantTYPO3Flow
+	cd VagrantTYPO3
 
 Boot up the virtual box:
 
